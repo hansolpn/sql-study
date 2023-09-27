@@ -87,6 +87,8 @@ ROLLBACK;
 SELECT * FROM emps_it
 ORDER BY employee_id ASC;
 
+--------------------------------------------------------------
+
 -- 문제 1
 -- DEPTS테이블의 다음을 추가하세요
 CREATE TABLE DEPTS 
@@ -112,7 +114,7 @@ WHERE department_name = 'IT Support';
 UPDATE DEPTS SET department_id = 301
 WHERE department_id = 290;
 
--- 2-3department_name이 IT Helpdesk인 데이터의 부서명을 IT Help로 , 매니저아이디를 303으로, 지역아이디를 1800으로 변경하세요
+-- 2-3 department_name이 IT Helpdesk인 데이터의 부서명을 IT Help로 , 매니저아이디를 303으로, 지역아이디를 1800으로 변경하세요
 UPDATE DEPTS
 SET
     department_name = 'IT Help',
@@ -160,12 +162,12 @@ ON
     (a.department_id = b.department_id)
 WHEN MATCHED THEN
     UPDATE SET
-        a.department_name = b.department_name ,
-        a.manager_id = b.manager_id ,
+        a.department_name = b.department_name,
+        a.manager_id = b.manager_id,
         a.location_id = b.location_id
 WHEN NOT MATCHED THEN
     INSERT VALUES
-        (b.department_id ,b.department_name ,b.manager_id ,b.location_id);
+        (b.department_id, b.department_name, b.manager_id, b.location_id);
 
 SELECT * FROM DEPTS;
 
@@ -188,15 +190,15 @@ INSERT INTO jobs_it
 --     데이터는 그대로 추가해주는 merge문을 작성하세요
 MERGE INTO jobs_it a
 USING
-    (SELECT * FROM jobs) b
+    (SELECT * FROM jobs WHERE min_salary > 5000) b
 ON
-    (a.job_id = b.job_id AND b.min_salary > 5000)
+    (a.job_id = b.job_id)
 WHEN MATCHED THEN
     UPDATE SET
         a.min_salary = b.min_salary,
         a.max_salary = b.max_salary
 WHEN NOT MATCHED THEN
     INSERT VALUES
-        (b.JOB_ID , b.JOB_TITLE , b.MIN_SALARY , b.MAX_SALARY);
+        (b.JOB_ID, b.JOB_TITLE, b.MIN_SALARY, b.MAX_SALARY);
 
 SELECT * FROM jobs_it;
