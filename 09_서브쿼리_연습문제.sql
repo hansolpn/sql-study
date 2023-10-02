@@ -222,7 +222,7 @@ WHERE e.job_id = 'SA_MAN';
 문제 14
 --DEPARTMENT테이블에서 각 부서의 ID, NAME, MANAGER_ID와 부서에 속한 인원수를 출력하세요.
 --인원수 기준 내림차순 정렬하세요.
---사람이 없는 부서는 출력하지 뽑지 않습니다.
+--사람이 없는 부서는 출력하지 않습니다.
 */
 SELECT
     *
@@ -246,8 +246,8 @@ SELECT
     d.*,
     l.street_address,
     l.postal_code,
-    NVL((SELECT AVG(salary) FROM employees e
-    WHERE e.department_id = d.department_id), 0) avg_salary
+    NVL(TRUNC((SELECT AVG(salary) FROM employees e
+    WHERE e.department_id = d.department_id)), 0) avg_salary
 FROM
     departments d
 LEFT JOIN locations l
@@ -269,8 +269,8 @@ FROM
             d.*,
             l.street_address,
             l.postal_code,
-            NVL((SELECT AVG(salary) FROM employees e
-            WHERE e.department_id = d.department_id), 0) avg_salary
+            NVL(TRUNC((SELECT AVG(salary) FROM employees e
+            WHERE e.department_id = d.department_id)), 0) avg_salary
         FROM
             departments d
         LEFT JOIN locations l
