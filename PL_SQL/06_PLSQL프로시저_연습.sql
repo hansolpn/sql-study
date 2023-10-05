@@ -84,25 +84,28 @@ employee_id를 입력받아 employees에 존재하면,
 */
 CREATE OR REPLACE PROCEDURE print_emp_hire
     (p_emp_id IN employees.employee_id%TYPE,
-     p_emp_year OUT NUMBER
+     p_year OUT NUMBER
     )
 IS
-    v_emp_year number(10);
+    v_year number(10);
 BEGIN
     SELECT TRUNC((sysdate - hire_date) / 365)
-    INTO v_emp_year
+    INTO v_year
     FROM employees
     WHERE employee_id = p_emp_id;
     
-    p_emp_year := v_emp_year;
+    p_year := v_year;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            dbms_output.put_line('입력한 employee_id의 데이터가 없어요!');
 END;
 
 DECLARE
-    v_emp_year number(10);
+    v_year number(10);
 
 BEGIN
-    print_emp_hire(99 ,v_emp_year);
-    dbms_output.put_line(v_emp_year);
+    print_emp_hire(576 ,v_year);
+    dbms_output.put_line(v_year);
 END;
 
 
@@ -125,24 +128,29 @@ CREATE OR REPLACE PROCEDURE new_emp_proc
      p_emp_job_id IN employees.job_id%TYPE
     )
 IS
-    v_cnt NUMBER(10);
 BEGIN
-    SELECT
-        (SELECT COUNT(*) FROM emps WHERE emps.employee_id = p_emp_id)
-    INTO
-        v_cnt
-    FROM dual;
-    
-    IF v_cnt = 0 THEN
-        INSERT INTO emps (employee_id, last_name, email, hire_date, job_id)
-        VALUES(p_emp_id, p_emp_last_name, p_emp_email, p_emp_hire_date, p_emp_job_id);
-    ELSE
-        UPDATE emps
-        SET
-            last_name = p_emp_last_name,
-            email = p_emp_email,
-            hire_date = p_emp_hire_date,
-            job_id = p_emp_job_id;
-    END IF;
-
+    MERGE INTO emps a -- 머지를 할 타켓 테이블
+        USING
+            (SELECT
+                p_emp_id as emp_id,
+                p_emp_last_name as last_name,
+                p_emp_email as email,
+                p_emp_hire_date as hire_date,
+                p_emp_job_id as job_id
+            from dual) b
+        ON
+            (a.employee_id = b.emp_id) -- 전달받은 사번이 emps에 존재하는 지를 병합 조건으로 물어봄
+        WHEN MATCHED THEN
+            UPDATE SET
+                a.last_name = b.last_name,
+                a.email = b.email,
+                a.hire_date = b.hire_date,
+                a.job_id = b.job_id
+        WHEN NOT MATCHED THEN
+            INSERT (employee_id, last_name, email, hire_date, job_id)
+            VALUES(b.emp_id, b.last_name, b.email,
+                    b.hire_date, b.job_id);
+    COMMIT;
 END;
+
+EXEC new_emp_proc(300, 'test1', 'test1', '2023-12-12', 'IT_TEST');
